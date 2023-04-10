@@ -437,6 +437,9 @@ df_new['outros_editais_9'] = None
 df_new_unique = df_new.drop_duplicates(subset='id_terracap')
 df_new_unique.reset_index(inplace=True)
 
+
+
+
 for i in range(len(df_duplicated)):
     cod_terracap_temp = df_duplicated['id_terracap'].iloc[i]
     data_edital_temp = df_duplicated['edital_x'].iloc[i]

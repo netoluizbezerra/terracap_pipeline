@@ -126,7 +126,6 @@ df.edital.unique()
 df.to_csv('terrenos_vendidos_terracap_2023_new.csv', index=False)
 terrenos_vendidos = pd.read_csv('terrenos_vendidos_terracap_2023_new.csv')
 
-
 terrenos_vendidos = pd.read_csv('terrenos_vendidos_terracap.csv')
 terrenos_vendidos_2 = pd.read_csv('terrenos_vendidos_terracap_2021_2022.csv')
 terrenos_vendidos_3 = df.copy()
