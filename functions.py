@@ -547,10 +547,10 @@ def get_unique_elements(list1, list2):
 
     return unique_list1, unique_list2
 
-revert_geometries(df)
+def revert_geometries(df):
     temp =[]
     for i in range(len(df)):
-        coord = ast.literal_eval(df.coords.iloc[i])
+        coord = ast.literal_eval(df.geometry.iloc[i])
         new_temp = []
         for item in coord:
             item.reverse()

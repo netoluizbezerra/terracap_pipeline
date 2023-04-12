@@ -58,6 +58,8 @@ for i in range(len(merged_df)):
 
 merged_df['R$ Valor / Pot. Max'] = merged_df['Valor de Face']/merged_df['Área Construção Máxima']
 merged_df['geometry'] = merged_df['coords']
+merged_df['Bairro'] = merged_df['bairro']
+
 
 
 list1 = list(merged_df.columns)
@@ -88,5 +90,6 @@ def revert_geometries(df):
 temp = revert_geometries(df=all_listings)
 all_listings['geometry'] = pd.Series(temp)
 df_new = pd.concat([all_listings, df])
-all_listings.to_csv('terracap_atualizado_{}.csv'.format(edital))
+
+df_new.to_csv('terracap_atualizado_{}.csv'.format(edital))
 
