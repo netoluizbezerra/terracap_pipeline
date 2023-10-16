@@ -1,10 +1,10 @@
 import pandas as pd
 import ast
 
-df_all = pd.read_csv('df_terracap_df_2023.csv')
-df_info_basica = pd.read_csv('info_basica_terracap_2023')
-df_all_01 = pd.read_csv('listings_terracap_2023')
-df_vendidos = pd.read_csv('terrenos_vendidos_terracap_2023_new.csv')
+df_all = pd.read_csv('Data/df_terracap_df_2023.csv')
+df_info_basica = pd.read_csv('Data/info_basica_terracap_2023')
+df_all_01 = pd.read_csv('Data/listings_terracap_2023')
+df_vendidos = pd.read_csv('Data/terrenos_vendidos_terracap_2023_new.csv')
 
 # KEpp goin with DF all e DF Vendidos
 lista_def = df_all

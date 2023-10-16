@@ -5,11 +5,12 @@ import re
 import time
 from selenium.webdriver import Chrome
 #biddings = list(range(18))
-biddings = [1, 2, 3]
+biddings = [5, 6]
 years = [2023]
 # Defining possible bidding dates
 bidding_all = []
 _date = datetime.today().strftime('%Y-%m-%d')
+
 
 for year in years:
     for bidding in biddings:
@@ -53,7 +54,7 @@ for year in years:
                         elif input_string[index - 1] != ' ':
                             space_flag = True
                     features[t] = output_string
-                    t+=1
+                    t += 1
                     print(''.join(output_string))
                 try:
                     endereco = ''.join(features[0]).split(': ')[1]
@@ -120,6 +121,7 @@ for year in years:
         driver.close()
 
 import pandas as pd
+
 df = pd.DataFrame(bidding_all)
 df.edital.unique()
 

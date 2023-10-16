@@ -19,6 +19,8 @@ def remove(num_imovel_list):
 remove(num_imovel_list)
 
 
+
+
 def get_details_terracap(url):
     link_terracap = url
     print(link_terracap)

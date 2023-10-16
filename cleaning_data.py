@@ -47,6 +47,8 @@ for i in range(len(lista_def)):
                                  ' ' + str(lista_def['outros_editais_9'].iloc[i])
     lista_def['Participação em Outros Editais'].iloc[i] = part_outros_editais_string.replace('nan', '')
 
+
+
 lista_def.to_csv('def_terracap_ongoing_2.csv')
 
 

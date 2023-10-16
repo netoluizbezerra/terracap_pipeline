@@ -1,9 +1,17 @@
 from scrapy.selector import Selector
+from typing import List, Dict
 import undetected_chromedriver as uc
+import re
 import time as time
 import pandas as pd
+import ast
+import os
+import patch
+
 
 def get_edital():
+    from path_maker import path
+
     """
     Scrapes the Edital number from a webpage.
 
@@ -11,12 +19,14 @@ def get_edital():
         A string representing the Edital number, or None if no Edital number was found.
     """
     # Define the URL to scrape
+    path = str(path)
+    webdriver_path = os.path.normpath(os.path.join(os.getcwd(), 'webdriver', patch.webdriver_executable()))
     link = 'https://comprasonline.terracap.df.gov.br/'
     # Set up the options for the Chrome driver
     options = uc.ChromeOptions()
     options.add_argument("--headless=new")  # Run Chrome in headless mode
     # Start the Chrome driver in a context manager to ensure proper cleanup
-    with uc.Chrome(options=options) as driver:
+    with uc.Chrome(options=options, driver_executable_path=webdriver_path) as driver:
         # Load the URL in the driver and get the page source
         driver.get(link)
         html = driver.page_source
@@ -35,8 +45,9 @@ def get_edital():
         # Return None if no Edital number was found
         return None
 
-from typing import List, Dict
-def get_basic_info_monthly_edict_terracap() -> List[Dict]:
+
+def get_basic_info_monthly_edict_terracap(edital, year) -> List[Dict]:
+    from path_maker import path
     """
     Scrape information about real estate properties from the website
     https://comprasonline.terracap.df.gov.br/.
@@ -45,10 +56,12 @@ def get_basic_info_monthly_edict_terracap() -> List[Dict]:
         A list of dictionaries with the scraped information.
     """
     # Set up web driver and go to the website
-    link = 'https://comprasonline.terracap.df.gov.br/'
+    link = 'https://comprasonline.terracap.df.gov.br/?edict_number={}&edict_year={}&page={}&item=&ra=&destination=&min=&max=&area_min=&area_max='.format(edital, year, 1)
+    path = str(path)
+    webdriver_path = os.path.normpath(os.path.join(os.getcwd(), 'webdriver', patch.webdriver_executable()))
     options = uc.ChromeOptions()
-#    options.add_argument('--headless=new')
-    driver = uc.Chrome(options=options)
+    options.add_argument('--headless=new')
+    driver = uc.Chrome(options=options, driver_executable_path=webdriver_path)
     driver.get(link)
     time.sleep(2)
     temp = []
@@ -62,11 +75,11 @@ def get_basic_info_monthly_edict_terracap() -> List[Dict]:
             num_page = 2+j
             html = driver.page_source
             response_obj = Selector(text=html)
-            itens = response_obj.xpath('//div[contains(@class, "card mb-3 sombreado")]')
+            items = response_obj.xpath('//div[contains(@class, "card mb-3 sombreado")]')
 
             # Iterate over each page and scrape the data
-            for i in range(len(itens)):
-                listing = itens[i]
+            for i in range(len(items)):
+                listing = items[i]
                 titulo = listing.xpath('.//h3[contains(@class, "card-title")]/text()').get()
                 edital = titulo.split('Edital : ')[1].split('\n')[0]
                 item_do_edital = titulo.split('Item : ')[1].split("xa")[0]
@@ -124,6 +137,9 @@ def get_basic_info_monthly_edict_terracap() -> List[Dict]:
 
 
 def get_details_terracap(url):
+    from path_maker import path
+    path = str(path)
+    webdriver_path = os.path.normpath(os.path.join(os.getcwd(), 'webdriver', patch.webdriver_executable()))
     link_terracap = url
     print(link_terracap)
     temp = []
@@ -132,7 +148,7 @@ def get_details_terracap(url):
 #    options.add_argument("--no-sandbox")
 #    options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--headless=new")
-    driver = uc.Chrome(options=options)
+    driver = uc.Chrome(options=options, driver_executable_path=webdriver_path)
 #        driver = Chrome()
     driver.get(link_terracap)
     time.sleep(2)
@@ -519,9 +535,9 @@ def get_details_terracap(url):
     return temp
 
 
-def check_df_edital(edital):
+def check_df_edital(edital, year):
     try:
-        all_listings = pd.read_csv('listings_terracap_{}'.format(edital))
+        all_listings = pd.read_csv('Data/Raw/listings_terracap_{}_{}'.format(edital, year))
         print('Dataframe Already Created')
     except:
         df_new = pd.DataFrame(
@@ -529,8 +545,8 @@ def check_df_edital(edital):
                      'valor_face', 'valor_caucao', 'cond_pgto', 'id_terracap', 'end', 'classficacao', 'relevo',
                      'situacao', 'tipo_de_solo', 'forma', 'posicao', 'frente', 'fundo', 'lado_direito', 'lado_esquerdo',
                      'url'])
+        df_new.to_csv('Data/Raw/listings_terracap_{}_{}'.format(edital, year), index=False)
         print('Dataframe has been Created')
-        df_new.to_csv('listings_terracap_{}'.format(edital), index=False)
 
 
 def get_unique_elements(list1, list2):
@@ -547,6 +563,7 @@ def get_unique_elements(list1, list2):
 
     return unique_list1, unique_list2
 
+
 def revert_geometries(df):
     temp =[]
     for i in range(len(df)):
@@ -557,3 +574,108 @@ def revert_geometries(df):
             new_temp.append(item)
         temp.append(new_temp)
     return temp
+
+
+def sold_properties(year, bidding):
+    from path_maker import path
+    path = str(path)
+    webdriver_path = os.path.normpath(os.path.join(os.getcwd(), 'webdriver', patch.webdriver_executable()))
+    link_terracap = 'https://comprasonline.terracap.df.gov.br/bidding/external/index?utf8=%E2%9C%93&edict_year={}&edict_number={}&number_item=&commit=Consultar'.format(year, (bidding))
+    print(link_terracap)
+    driver = uc.Chrome(driver_executable_path=webdriver_path)
+    driver.get(link_terracap)
+    html = driver.page_source
+    response_obj = Selector(text=html)
+    items = response_obj.xpath('//div[contains(@class, "card")]')
+    items = items[1:]
+    temp = []
+    if len(items) >= 1:
+        print('Edital {} do ano de {}'.format(bidding, year))
+        for item in items:
+            titulo = item.xpath('.//div[contains(@class, "header")]/text()').get()
+            features = item.xpath('.//div[@class="content"]/div/text()').getall()
+
+            #features.append(titulo)
+            output_features = []
+            for feature in features:
+                input_string = feature.split("\n")[1]
+                input_string = input_string.lstrip()
+                print(input_string)
+                output_features.append(input_string)
+
+            endereco = None
+            licitante = None
+            valor = None
+            condicao = None
+            meses = None
+            entrada = None
+            edital = None
+            button = 'Desclassificado'
+
+            if len(output_features) > 0:
+                try:
+                    endereco = output_features[1].split(': ')[1]
+                except:
+                    pass
+
+                try:
+                    licitante = re.sub("[^0-9]", "", output_features[2])
+                except:
+                    pass
+
+                try:
+                    valor = output_features[3].split(': ')[1].replace("R$", "")
+                    valor = int(valor.split(',')[0].replace(".", ""))
+                except:
+                    pass
+
+                try:
+                    condicao = output_features[4].split(': ')[1]
+                except:
+                    pass
+
+                try:
+                    meses = int(re.sub("[^0-9]", "", output_features[5]))
+                except:
+                    pass
+
+                try:
+                    entrada = float(re.sub("[^0-9]", "", output_features[6])) / 100
+                except:
+                    pass
+
+                try:
+                    edital = output_features[0].split(': ')[1]
+                except:
+                    pass
+
+                try:
+                    button_text = item.xpath('.//div[contains(@class, "button")]/text()').getall()[1]
+                    button = int(re.sub("[^0-9]", "", button_text))
+                except:
+                    pass
+
+            temp.append({
+                'edital': edital,
+                'colocacao': button,
+                'endereco': endereco,
+                'licitante': licitante,
+                'condicao': condicao,
+                'meses': meses,
+                'entrada': entrada,
+                'valor': valor,
+            })
+    else:
+        print('Edital não disponível')
+    driver.quit()
+    return pd.DataFrame(temp)
+
+
+
+
+
+
+
+
+
+
